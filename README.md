@@ -23,8 +23,32 @@ See the [demo](http://ivansanchez.github.io/Leaflet.CheapLayerAt/demo.html).
 * `<canvas>` layers will prevent it from working
 * Only works on SVG vectors, markers and image overlays
 * Only retrieves the top-most layer
+* Might have sub-pixel accuracy problems
+* Ignores tile layers
+* Only works within the visible map bounds
 
+## Usage
 
+The plugin adds two functions to `L.Map`:
+
+### `map.getLayerAt(point)`
+
+Given an instance of `L.Point`, representing the pixel coordinates relative to the
+top left corner of the map container, returns the `L.Layer` under that pixel, or
+`undefined` if there is no layer under that pixel.
+
+If there is more than one layer under that pixel, this function will return the
+top-most one, according to the DOM. e.g. if there is a marker icon over a polygon,
+the marker will be returned and the polygon will be ignored.
+
+The `point` parameter must be contained within the map size. Will return `undefined`
+if `point` is outside the map viewport size.
+
+### `map.getLayerAtLatLng(latlng)`
+
+Given an instance of `L.LatLng`, returns the top-most layer containing that lat-lng.
+
+Will return `undefined` if the `latlng` is outside the current map viewport bounds.
 
 
 ## Legalese
