@@ -2,7 +2,7 @@
 L.Map.include({
 
 	getLayerAtLatLng: function(latlng, lng) {
-		latlng = L.latlng(latlng, lng);
+		latlng = L.latLng(latlng, lng);
 
 		return this.layerAt(latLngToContainerPoint(latlng));
 	},
