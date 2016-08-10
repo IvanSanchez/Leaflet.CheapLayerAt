@@ -1,6 +1,6 @@
 {
   "name": "leaflet.cheaplayerat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A cheap replacement of point-in-polygon calculations for LeafletJS maps",
   "main": "Leaflet.CheapLayerAt.js",
   "scripts": {
