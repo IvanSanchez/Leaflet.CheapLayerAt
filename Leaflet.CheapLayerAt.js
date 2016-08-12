@@ -1,10 +1,9 @@
 
 L.Map.include({
 
-	getLayerAtLatLng: function(latlng, lng) {
-		latlng = L.latLng(latlng, lng);
-
-		return this.layerAt(latLngToContainerPoint(latlng));
+	getLayerAtLatLng: function(lat, lng) {
+		latlng = L.latLng(lat, lng);
+		return this.getLayerAt(this.latLngToContainerPoint(latlng).x, this.latLngToContainerPoint(latlng).y);
 	},
 
 	getLayerAt: function(point, y) {
