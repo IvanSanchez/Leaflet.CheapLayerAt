@@ -11,9 +11,7 @@ L.Map.include({
 		point = L.point(point, y);
 
 		// Ignore points outside the map
-		if (!this.getSize().contains(point)) {
-			return;
-		}
+		if (!this.getSize().contains(point)) { return; }
 
 		var mapPos = this._container.getBoundingClientRect();
 
@@ -25,7 +23,11 @@ L.Map.include({
 	},
 
 	_getLayerFromDOMElement: function(el) {
-		if (el === this._container) {
+		if ((!el) || el === this._container) {
+			// Stop the search when the map container itself is reached (meaning no
+			// layer at the requested point) or the container is undefined (the
+			// DOM elements were traversed up to the Document, meaning the map
+			// is invisible e.g. because CSS)
 			return;
 		}
 
