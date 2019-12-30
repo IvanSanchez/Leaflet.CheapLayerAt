@@ -6,6 +6,11 @@ L.Map.include({
 		return this.getLayerAt(this.latLngToContainerPoint(latlng).x, this.latLngToContainerPoint(latlng).y);
 	},
 
+	getLayersAtLatLng: function(lat, lng) {
+		latlng = L.latLng(lat, lng);
+		return this.getLayersAt(this.latLngToContainerPoint(latlng).x, this.latLngToContainerPoint(latlng).y);
+	},
+
 	getLayerAt: function(point, y) {
 		point = L.point(point, y);
 
@@ -19,6 +24,42 @@ L.Map.include({
 		var el = document.elementFromPoint(viewportPoint.x, viewportPoint.y);
 
 		return this._getLayerFromDOMElement(el);
+	},
+
+	getLayersAt: function(point, y) {
+		point = L.point(point, y);
+
+		// Ignore points outside the map
+		if (!this.getSize().contains(point)) { return; }
+
+		var mapPos = this._container.getBoundingClientRect();
+
+		var viewportPoint = L.point(mapPos.left, mapPos.top).add(point);
+
+		var els = this._getElementsFromPoint(viewportPoint.x, viewportPoint.y);
+		var out = [];
+		for(var i = 0; i < els.length; i += 1) {
+			var lay = this._getLayerFromDOMElement(els[i]);
+			if(lay) out.push(lay);
+		}
+		return out;
+	},
+
+	_getElementsFromPoint: function(x, y) {
+		var stack = [], el;
+		var i = 1000; // prevent from infinite loop
+		do {
+			el = document.elementFromPoint(x, y);
+			stack.push(el);
+			el.style.pointerEvents = 'none';
+		}while(el.tagName !== 'HTML' && i--);
+
+		// clean up
+		for(var i  = 0; i < stack.length; i += 1){
+			stack[i].style.pointerEvents = '';
+		}
+
+		return stack;
 	},
 
 	_getLayerFromDOMElement: function(el) {
