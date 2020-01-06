@@ -47,14 +47,15 @@ L.Map.include({
 	},
 
 	_getElementsFromPoint: function(x, y) {
-		var _container = this._container;
-		var stack = [], el;
-		var limit = 1000; // prevent from infinite loop
+		var _container = this.getContainer();
+		var stack = [], e;
 		do {
-			el = document.elementFromPoint(x, y);
+			var el = document.elementFromPoint(x, y);
+			if(e == el) break; // same element ?!
+			e = el;
 			stack.push([el, el.style.pointerEvents]);
 			el.style.pointerEvents = 'none';
-		}while(el !== _container && limit--);
+		}while(el !== _container);
 
 		// clean up
 		for(var i  = 0; i < stack.length; i += 1){
