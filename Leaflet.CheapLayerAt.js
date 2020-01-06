@@ -1,13 +1,41 @@
 
 L.Map.include({
 
-	getLayerAtLatLng: function(latlng, lng) {
-		latlng = L.latLng(latlng, lng);
+	getLayerAtLatLng: function(lat, lng) {
+		var latlng = L.latLng(lat, lng);
+		return this.getLayerAt(this.latLngToContainerPoint(latlng).x, this.latLngToContainerPoint(latlng).y);
+	},
 
-		return this.layerAt(latLngToContainerPoint(latlng));
+	getLayersAtLatLng: function(lat, lng) {
+		var latlng = L.latLng(lat, lng);
+		return this.getLayersAt(this.latLngToContainerPoint(latlng).x, this.latLngToContainerPoint(latlng).y);
 	},
 
 	getLayerAt: function(point, y) {
+		var viewportPoint = this._mapPointToDocumentPoint(point, y);
+
+		if(!viewportPoint) return;
+
+		var el = document.elementFromPoint(viewportPoint.x, viewportPoint.y);
+
+		return this._getLayerFromDOMElement(el);
+	},
+
+	getLayersAt: function(point, y) {
+		var viewportPoint = this._mapPointToDocumentPoint(point, y);
+
+		if(!viewportPoint) return;
+
+		var els = this._getElementsFromPoint(viewportPoint.x, viewportPoint.y);
+		var out = [];
+		for(var i = 0; i < els.length; i += 1) {
+			var lay = this._getLayerFromDOMElement(els[i]);
+			if(lay) out.push(lay);
+		}
+		return out;
+	},
+
+	_mapPointToDocumentPoint: function(point, y) {
 		point = L.point(point, y);
 
 		// Ignore points outside the map
@@ -15,11 +43,28 @@ L.Map.include({
 
 		var mapPos = this._container.getBoundingClientRect();
 
-		var viewportPoint = L.point(mapPos.left, mapPos.top).add(point);
+		return L.point(mapPos.left, mapPos.top).add(point);
+	},
 
-		var el = document.elementFromPoint(viewportPoint.x, viewportPoint.y);
+	_getElementsFromPoint: function(x, y) {
+		var _container = this.getContainer();
+		var stack = [], e;
+		do {
+			var el = document.elementFromPoint(x, y);
+			if(e == el) break; // same element ?!
+			e = el;
+			stack.push([el, el.style.pointerEvents]);
+			el.style.pointerEvents = 'none';
+		}while(el !== _container);
 
-		return this._getLayerFromDOMElement(el);
+		// clean up
+		for(var i  = 0; i < stack.length; i += 1){
+			var el = stack[i];
+			el[0].style.pointerEvents = el[1];
+			stack[i] = el[0];
+		}
+
+		return stack;
 	},
 
 	_getLayerFromDOMElement: function(el) {
