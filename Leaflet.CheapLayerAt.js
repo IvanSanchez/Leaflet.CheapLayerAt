@@ -2,24 +2,19 @@
 L.Map.include({
 
 	getLayerAtLatLng: function(lat, lng) {
-		latlng = L.latLng(lat, lng);
+		var latlng = L.latLng(lat, lng);
 		return this.getLayerAt(this.latLngToContainerPoint(latlng).x, this.latLngToContainerPoint(latlng).y);
 	},
 
 	getLayersAtLatLng: function(lat, lng) {
-		latlng = L.latLng(lat, lng);
+		var latlng = L.latLng(lat, lng);
 		return this.getLayersAt(this.latLngToContainerPoint(latlng).x, this.latLngToContainerPoint(latlng).y);
 	},
 
 	getLayerAt: function(point, y) {
-		point = L.point(point, y);
+		var viewportPoint = this._mapPointToDocumentPoint(point, y);
 
-		// Ignore points outside the map
-		if (!this.getSize().contains(point)) { return; }
-
-		var mapPos = this._container.getBoundingClientRect();
-
-		var viewportPoint = L.point(mapPos.left, mapPos.top).add(point);
+		if(!viewportPoint) return;
 
 		var el = document.elementFromPoint(viewportPoint.x, viewportPoint.y);
 
@@ -27,14 +22,9 @@ L.Map.include({
 	},
 
 	getLayersAt: function(point, y) {
-		point = L.point(point, y);
+		var viewportPoint = this._mapPointToDocumentPoint(point, y);
 
-		// Ignore points outside the map
-		if (!this.getSize().contains(point)) { return; }
-
-		var mapPos = this._container.getBoundingClientRect();
-
-		var viewportPoint = L.point(mapPos.left, mapPos.top).add(point);
+		if(!viewportPoint) return;
 
 		var els = this._getElementsFromPoint(viewportPoint.x, viewportPoint.y);
 		var out = [];
@@ -45,18 +35,32 @@ L.Map.include({
 		return out;
 	},
 
+	_mapPointToDocumentPoint: function(point, y) {
+		point = L.point(point, y);
+
+		// Ignore points outside the map
+		if (!this.getSize().contains(point)) { return; }
+
+		var mapPos = this._container.getBoundingClientRect();
+
+		return L.point(mapPos.left, mapPos.top).add(point);
+	},
+
 	_getElementsFromPoint: function(x, y) {
+		var _container = this._container;
 		var stack = [], el;
-		var i = 1000; // prevent from infinite loop
+		var limit = 1000; // prevent from infinite loop
 		do {
 			el = document.elementFromPoint(x, y);
-			stack.push(el);
+			stack.push([el, el.style.pointerEvents]);
 			el.style.pointerEvents = 'none';
-		}while(el.tagName !== 'HTML' && i--);
+		}while(el !== _container && limit--);
 
 		// clean up
 		for(var i  = 0; i < stack.length; i += 1){
-			stack[i].style.pointerEvents = '';
+			var el = stack[i];
+			el[0].style.pointerEvents = el[1];
+			stack[i] = el[0];
 		}
 
 		return stack;
